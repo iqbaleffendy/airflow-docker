@@ -1,0 +1,3 @@
+logs
+modules/test_dbt/logs
+modules/test_dbt/target
