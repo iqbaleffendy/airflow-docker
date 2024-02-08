@@ -1,0 +1,15 @@
+sources:
+  - name: 'table_source'
+    database: dbt_learn
+    schema: public
+    tables:
+      - name: lp_pos_segmentation
+      - name: pos_aging_booked
+      - name: pos_segmentation_raw
+
+
+models:
+  - name: pos_segmentation_stg_final
+    tests:
+      - duplicate_check:
+          column_name: "concat(pos_code, month_year)"

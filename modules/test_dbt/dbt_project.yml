@@ -1,0 +1,27 @@
+name: 'test_dbt'
+version: '1.0'
+profile: 'redshift_dwh'
+
+model-paths: ['models']
+analysis-paths: ['analyses']
+test-paths: ['tests']
+seed-paths: ['seeds']
+macro-paths: ['macros']
+snapshot-paths: ['snapshots']
+
+clean-targets:
+  - 'dbt_packages'
+  - 'target'
+
+vars:
+  month_year: '2024-01'
+
+
+models:
+  test_dbt:
+    pos_segmentation:
+      +materialized: view
+      marts:
+        +schema: marts
+      staging:
+        +schema: staging
