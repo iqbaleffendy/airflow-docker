@@ -1,0 +1,13 @@
+redshift_dwh:
+  outputs:
+    dev:
+      account: JJ27005.ap-southeast-3.aws
+      database: dbt_learn
+      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      role: accountadmin
+      schema: public
+      threads: 1
+      type: snowflake
+      user: "{{ env_var('SNOWFLAKE_USERNAME') }}"
+      warehouse: COMPUTE_WH
+  target: dev
