@@ -42,7 +42,7 @@ def pos_segmentation():
         task_id = 'incremental_process',
         bash_command = """
         cd /opt/airflow/modules/test_dbt/ && \
-        dbt run --select '1+pos_segmentation_update_diamond' --vars '{"month_year":"{{params.month_year}}"}'
+        dbt run --select '1+pos_segmentation_update_diamond' --vars '{"month_year":"{{params.month_year}}"}' --exclude 'pos_segmentation_stg_final'
         """
     )
     
