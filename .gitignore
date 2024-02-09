@@ -4,3 +4,4 @@ modules/test_dbt/target
 dags/__pycache__
 .env
 modules/test_dbt/.user.yml
+modules/ingest_csv/__pycache__
