@@ -2,3 +2,5 @@ logs
 modules/test_dbt/logs
 modules/test_dbt/target
 dags/__pycache__
+.env
+modules/test_dbt/.user.yml
