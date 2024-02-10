@@ -27,8 +27,7 @@ def testing_ingest():
         op_kwargs = {
             'env_file':'./.env',
             'path':'./data/test.csv',
-            'table_name': 'public.test_table_staging',
-            'table_ddl':'id int,name varchar(100)'
+            'table_name': 'public.test_table_staging'
         }
     )
     
@@ -36,11 +35,14 @@ def testing_ingest():
         task_id = 'insert_to_table_target',
         snowflake_conn_id = 'snowflake_conn',
         sql = """
-        insert into public.test_table (id, name)
-        select * from public.test_table_staging;
+        delete from public.test_table
+        where id in (select id from public.test_table_staging);
         
-        update public.test_table
-        set etl_date = current_timestamp;
+        insert into public.test_table
+        select 
+            *,
+            current_timestamp as etl_date 
+        from public.test_table_staging;
         
         drop table if exists public.test_table_staging;
         """
