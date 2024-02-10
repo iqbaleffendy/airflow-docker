@@ -15,6 +15,7 @@ from ingest_script import upload_csv_to_snowflake
     schedule_interval = "@once",
     tags = ["testing"],
     start_date = datetime(year=2023, month=6, day=1, hour=8, minute=00),
+    params = {'table_name': 'public.test_table'},
     max_active_runs = 1,
     catchup = False
 )
@@ -27,25 +28,10 @@ def testing_ingest():
         op_kwargs = {
             'env_file':'./.env',
             'path':'./data/test.csv',
-            'table_name': 'public.test_table_staging'
+            'table_name': '{{params.table_name}}'
         }
     )
     
-    insert_to_table_target = SnowflakeOperator(
-        task_id = 'insert_to_table_target',
-        snowflake_conn_id = 'snowflake_conn',
-        sql = """
-        delete from public.test_table
-        where id in (select id from public.test_table_staging);
-        
-        insert into public.test_table
-        select *, current_timestamp as etl_date 
-        from public.test_table_staging;
-        
-        drop table if exists public.test_table_staging;
-        """
-    )
-    
-    create_table >> insert_to_table_target
+    create_table
     
 dag = testing_ingest()
