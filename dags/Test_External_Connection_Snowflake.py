@@ -39,9 +39,7 @@ def testing_ingest():
         where id in (select id from public.test_table_staging);
         
         insert into public.test_table
-        select 
-            *,
-            current_timestamp as etl_date 
+        select *, current_timestamp as etl_date 
         from public.test_table_staging;
         
         drop table if exists public.test_table_staging;
