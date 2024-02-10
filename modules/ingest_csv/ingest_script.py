@@ -42,19 +42,18 @@ def upload_csv_to_snowflake(env_file, path, table_name):
         cur.execute('USE ROLE ACCOUNTADMIN')
         cur.execute('USE DATABASE DBT_LEARN')
         cur.execute('DROP TABLE IF EXISTS {table_name}'.format(table_name = table_name))
-        # cur.execute('CREATE TABLE {table_name} ({table_ddl})'.format(table_name = table_name, table_ddl = table_ddl))
         cur.execute(create_table_statement)
         
-        for index, row in df.iterrows():
+        for index in range(len(df)):
             cur.execute(
                 """
                 INSERT INTO {table_name}
                 VALUES
                 ({id}, '{values}')
-                """.format(table_name = table_name, id = row['id'], values = row['name'])
+                """.format(table_name = table_name, id = df.iloc[index, 0], values = df.iloc[index, 1])
             )
         
-        # write_pandas(snowflake_conn, df, table_name = 'public.test_table_staging')
+        # write_pandas(snowflake_conn, df, table_name = table_name)
     
     except:
         cur.close()
