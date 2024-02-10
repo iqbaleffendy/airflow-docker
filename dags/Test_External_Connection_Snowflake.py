@@ -15,7 +15,10 @@ from ingest_script import upload_csv_to_snowflake
     schedule_interval = "@once",
     tags = ["testing"],
     start_date = datetime(year=2023, month=6, day=1, hour=8, minute=00),
-    params = {'table_name': 'public.test_table'},
+    params = {
+        'schema_name': 'public',
+        'table_name': 'test_table'
+    },
     max_active_runs = 1,
     catchup = False
 )
@@ -28,6 +31,7 @@ def testing_ingest():
         op_kwargs = {
             'env_file':'./.env',
             'path':'./data/test.csv',
+            'schema_name': '{{params.schema_name}}',
             'table_name': '{{params.table_name}}'
         }
     )
