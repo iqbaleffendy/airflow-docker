@@ -63,13 +63,16 @@ def upload_csv_to_snowflake(env_file, path, schema_name, table_name):
         cur.execute('DROP TABLE IF EXISTS {schema_name}.{table_name}_staging'.format(schema_name = schema_name, table_name = table_name))
         cur.execute(create_table_statement)
         
-        for index in range(len(df)):
+        for index, row in df.iterrows():
+            
+            values = ', '.join([f"'{value}'" if isinstance(value, str) else str(value) for value in row])
+            
             cur.execute(
                 """
                 INSERT INTO {schema_name}.{table_name}_staging
                 VALUES
-                ({id}, '{values}')
-                """.format(schema_name = schema_name, table_name = table_name, id = df.iloc[index, 0], values = df.iloc[index, 1])
+                ({values})
+                """.format(schema_name = schema_name, table_name = table_name, values = values)
             )
         
         # write_pandas(snowflake_conn, df, table_name = table_name)
@@ -86,10 +89,10 @@ def upload_csv_to_snowflake(env_file, path, schema_name, table_name):
             cur.execute('ALTER TABLE {schema_name}.{table_name} ADD COLUMN etl_date TIMESTAMP WITHOUT TIME ZONE'.format(schema_name = schema_name, table_name = table_name))
             cur.execute('UPDATE {schema_name}.{table_name} SET etl_date = current_timestamp'.format(schema_name = schema_name, table_name = table_name))
     
-    except:
+    except Exception as e:
         cur.close()
         snowflake_conn.close()
-        print('Error')
+        print(f"Error occurred: {str(e)}")
     
     finally:
         cur.close()
