@@ -11,7 +11,7 @@ def create_sql_statement(schema_name, table_name, df):
         'datetime64':'TIMESTAMP'
     }
     
-    sql_statement = 'CREATE TABLE {schema_name}.{table_name}_staging ('.format(schema_name = schema_name, table_name = table_name)
+    sql_statement = f'CREATE TABLE {schema_name}.{table_name}_staging ('
     
     for column, dtype in df.dtypes.items():
         sql_type = sql_type_mapping.get(str(dtype), 'VARCHAR')
@@ -27,11 +27,12 @@ def check_if_table_exists(cursor, schema_name, table_name):
     table_name = table_name.upper()
     schema_name = schema_name.upper()
     cursor.execute(
-        """
+        f"""
         SELECT COUNT(*) FROM information_schema.tables 
         WHERE table_schema = '{schema_name}'
-        AND table_name = '{table_name}' 
-        """.format(schema_name = schema_name, table_name = table_name))
+        AND table_name = '{table_name}'
+        """
+    )
     
     if cursor.fetchone()[0] == 1:
         result_check = 1
@@ -54,13 +55,14 @@ def upload_csv_to_snowflake(env_file, path, schema_name, table_name):
     cur = snowflake_conn.cursor()
     
     df = pd.read_csv(path, sep=';')
+    key_column = df.columns[0]
     create_table_statement = create_sql_statement(schema_name = schema_name, table_name = table_name, df = df)
     
     try:
         cur.execute('USE ROLE ACCOUNTADMIN')
         cur.execute('USE DATABASE DBT_LEARN')
         cur.execute('USE SCHEMA {schema_name}'.format(schema_name = schema_name.upper()))
-        cur.execute('DROP TABLE IF EXISTS {schema_name}.{table_name}_staging'.format(schema_name = schema_name, table_name = table_name))
+        cur.execute(f'DROP TABLE IF EXISTS {schema_name}.{table_name}_staging')
         cur.execute(create_table_statement)
         
         for index, row in df.iterrows():
@@ -68,11 +70,11 @@ def upload_csv_to_snowflake(env_file, path, schema_name, table_name):
             values = ', '.join([f"'{value}'" if isinstance(value, str) else str(value) for value in row])
             
             cur.execute(
-                """
+                f"""
                 INSERT INTO {schema_name}.{table_name}_staging
                 VALUES
                 ({values})
-                """.format(schema_name = schema_name, table_name = table_name, values = values)
+                """
             )
         
         # write_pandas(snowflake_conn, df, table_name = table_name)
@@ -80,14 +82,14 @@ def upload_csv_to_snowflake(env_file, path, schema_name, table_name):
         result_check = check_if_table_exists(cursor = cur, schema_name = schema_name, table_name = table_name)
         
         if result_check == 1:
-            cur.execute('DELETE FROM {schema_name}.{table_name} WHERE id IN (SELECT id FROM {schema_name}.{table_name}_staging)'.format(schema_name = schema_name, table_name = table_name))
-            cur.execute('INSERT INTO {schema_name}.{table_name} SELECT *, CURRENT_TIMESTAMP AS etl_date FROM {schema_name}.{table_name}_staging'.format(schema_name = schema_name, table_name = table_name))
-            cur.execute('DROP TABLE IF EXISTS {schema_name}.{table_name}_staging'.format(schema_name = schema_name, table_name = table_name))
+            cur.execute(f'DELETE FROM {schema_name}.{table_name} WHERE {key_column} IN (SELECT {key_column} FROM {schema_name}.{table_name}_staging)')
+            cur.execute(f'INSERT INTO {schema_name}.{table_name} SELECT *, CURRENT_TIMESTAMP AS etl_date FROM {schema_name}.{table_name}_staging')
+            cur.execute(f'DROP TABLE IF EXISTS {schema_name}.{table_name}_staging')
         
         else:
-            cur.execute('ALTER TABLE {schema_name}.{table_name}_staging RENAME TO {table_name}'.format(schema_name = schema_name, table_name = table_name))
-            cur.execute('ALTER TABLE {schema_name}.{table_name} ADD COLUMN etl_date TIMESTAMP WITHOUT TIME ZONE'.format(schema_name = schema_name, table_name = table_name))
-            cur.execute('UPDATE {schema_name}.{table_name} SET etl_date = current_timestamp'.format(schema_name = schema_name, table_name = table_name))
+            cur.execute(f'ALTER TABLE {schema_name}.{table_name}_staging RENAME TO {table_name}')
+            cur.execute(f'ALTER TABLE {schema_name}.{table_name} ADD COLUMN etl_date TIMESTAMP WITHOUT TIME ZONE')
+            cur.execute(f'UPDATE {schema_name}.{table_name} SET etl_date = current_timestamp')
     
     except Exception as e:
         cur.close()
