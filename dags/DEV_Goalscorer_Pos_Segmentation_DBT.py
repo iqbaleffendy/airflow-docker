@@ -2,7 +2,6 @@ from datetime import datetime
 from airflow.decorators import dag
 from airflow.operators.empty import EmptyOperator
 from airflow.operators.bash_operator import BashOperator
-from airflow.providers.snowflake.operators.snowflake import SnowflakeOperator
 from datetime import date
 from dotenv import load_dotenv
 

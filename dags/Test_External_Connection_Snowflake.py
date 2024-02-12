@@ -1,8 +1,6 @@
 from datetime import datetime
 from airflow.decorators import dag
-from airflow.operators.bash_operator import BashOperator
 from airflow.operators.python import PythonOperator
-from airflow.providers.snowflake.operators.snowflake import SnowflakeOperator
 import sys
 import os
 sys.path.append("/opt/airflow/modules/ingest_csv")
