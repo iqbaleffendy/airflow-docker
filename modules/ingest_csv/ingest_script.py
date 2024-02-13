@@ -4,6 +4,7 @@ from dotenv import dotenv_values
 import pandas as pd
 
 def create_sql_statement(schema_name, table_name, df):
+    
     sql_type_mapping = {
         'int64':'INTEGER',
         'float64':'FLOAT',
