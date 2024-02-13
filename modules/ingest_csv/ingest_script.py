@@ -62,7 +62,7 @@ def upload_csv_to_snowflake(env_file, path, schema_name, table_name):
     try:
         cur.execute('USE ROLE ACCOUNTADMIN')
         cur.execute('USE DATABASE DBT_LEARN')
-        cur.execute('USE SCHEMA {schema_name}'.format(schema_name = schema_name.upper()))
+        cur.execute(f'USE SCHEMA {schema_name.upper()}')
         cur.execute(f'DROP TABLE IF EXISTS {schema_name}.{table_name}_staging')
         cur.execute(create_table_statement)
         
